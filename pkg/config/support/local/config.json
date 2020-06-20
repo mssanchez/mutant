@@ -1,6 +1,6 @@
 {
   "server": {
-    "port": ":9290"
+    "port": ":8080"
   },
   "mongodb": {
     "database_name": "mutant-local",
