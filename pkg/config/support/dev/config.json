@@ -3,9 +3,10 @@
     "port": ":8080"
   },
   "mongodb": {
-    "database_name": "mutant-local",
+    "database_name": "mutant",
     "collection_name": "mutants",
-    "url": "mongodb://127.0.0.1:27017/mutant-local",
+    "url": "mongodb+srv://mutant:%s@mutant-3dwbc.gcp.mongodb.net/mutant?retryWrites=true&w=majority",
+    "password": "Sj!Ti&8N3pFd4Fy",
     "disconnect_timeout_in_s": 5
   }
 }

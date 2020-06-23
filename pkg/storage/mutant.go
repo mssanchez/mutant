@@ -8,7 +8,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"mutant/pkg/config"
-	"os"
 	"time"
 )
 
@@ -23,6 +22,15 @@ type MutantStorage interface {
 	Shutdown()
 }
 
+type mongoClient struct {
+	DabaseName           string
+	CollectionName       string
+	client               *mongo.Client
+	log                  *logrus.Logger
+	disconnectTimeoutInS int
+	cancelFunc           context.CancelFunc
+}
+
 func NewMutantsStorage(config config.Configuration, log *logrus.Logger) MutantStorage {
 	log.Info("init storage package...")
 
@@ -31,29 +39,44 @@ func NewMutantsStorage(config config.Configuration, log *logrus.Logger) MutantSt
 
 	log.Infof("storage client with %s environment", config.Environment)
 
-	password := os.Getenv("MUTANT-DOCUMENTDB-PASS")
 	connectionURI := config.Mongodb.Url
-	if password != "" {
-		connectionURI = fmt.Sprintf(config.Mongodb.Url, password)
+	if config.Mongodb.Password != "" {
+		connectionURI = fmt.Sprintf(config.Mongodb.Url, config.Mongodb.Password)
 	}
 
-	client, err = mongo.NewClient(options.Client().ApplyURI(connectionURI))
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	client, err = mongo.Connect(ctx, options.Client().ApplyURI(connectionURI))
 	if err != nil {
 		log.Errorf("fatal error: %v", err)
 		panic(err)
 	}
 
-	return newMongoClient(client, config, log)
+	pingCtx, cancelPingFunc := context.WithTimeout(context.Background(), 20*time.Second)
+	if err = client.Ping(pingCtx, nil); err != nil {
+		panic("could not ping to mongo db service: " + err.Error())
+	}
+	cancelPingFunc()
+
+	return &mongoClient{
+		DabaseName:           config.Mongodb.DatabaseName,
+		CollectionName:       config.Mongodb.CollectionName,
+		client:               client,
+		cancelFunc:           cancel,
+		disconnectTimeoutInS: config.Mongodb.DisconnectTimeoutInSeconds,
+		log:                  log,
+	}
 }
 
-func (mc *MongoClient) Count(isMutant bool) (int64, error) {
+func (mc *mongoClient) Count(isMutant bool) (int64, error) {
 	opts := options.Count().SetMaxTime(30 * time.Second)
 	filter := bson.M{"is_mutant": isMutant}
 
 	return mc.collection().CountDocuments(context.TODO(), filter, opts)
 }
 
-func (mc *MongoClient) Save(doc *MutantDoc) error {
+func (mc *mongoClient) Save(doc *MutantDoc) error {
 	mc.log.Infof("Storing mutant doc %v", doc)
 
 	ctx, cancel := context.WithTimeout(context.TODO(), 2*time.Second)
@@ -67,7 +90,7 @@ func (mc *MongoClient) Save(doc *MutantDoc) error {
 	return err
 }
 
-func (mc *MongoClient) Shutdown() {
+func (mc *mongoClient) Shutdown() {
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Duration(mc.disconnectTimeoutInS)*time.Second)
 	if err := mc.client.Disconnect(ctx); err != nil {
 		mc.log.Error(err.Error())
@@ -77,6 +100,6 @@ func (mc *MongoClient) Shutdown() {
 	mc.cancelFunc()
 }
 
-func (mc *MongoClient) collection() *mongo.Collection {
+func (mc *mongoClient) collection() *mongo.Collection {
 	return mc.client.Database(mc.DabaseName).Collection(mc.CollectionName)
 }

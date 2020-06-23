@@ -12,10 +12,7 @@ type ErrorType uint
 const (
 	NoType ErrorType = iota
 	UserError
-	NotFound
-	InternalError
 	StatusUnsupportedMediaType
-	NotModified
 	Forbidden
 )
 
@@ -40,11 +37,6 @@ func (errorType ErrorType) New(msg string) Error {
 // Newf creates a new customError with formatted message
 func (errorType ErrorType) Newf(msg string, args ...interface{}) Error {
 	return customError{errorType: errorType, originalError: fmt.Errorf(msg, args...)}
-}
-
-// Wrap creates a new wrapped error
-func (errorType ErrorType) Wrap(err error, msg string) Error {
-	return errorType.Wrapf(err, msg)
 }
 
 // Wrapf creates a new wrapped error with formatted message

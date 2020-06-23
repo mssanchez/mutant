@@ -1,13 +1,13 @@
 package errors
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestContext(t *testing.T) {
-
 	err := UserError.New("an_error")
 	errWithContext := err.AddSingleContext("a_field", "the field is empty")
 
@@ -44,4 +44,12 @@ func TestWrapfNoType(t *testing.T) {
 
 	assert.Equal(t, NoType, wrappedError.Type())
 	assert.EqualError(t, wrappedError, "error 1: an_error 2")
+}
+
+func TestWrapfNoCustomError(t *testing.T) {
+	originalErr := fmt.Errorf("some error")
+	wrappedError := Wrapf(originalErr, "error %s", "1")
+
+	assert.Equal(t, NoType, wrappedError.Type())
+	assert.EqualError(t, wrappedError, "error 1: some error")
 }

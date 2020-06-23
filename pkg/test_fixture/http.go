@@ -16,7 +16,11 @@ func SetupRouter() *gin.Engine {
 }
 
 func NewRequest(method, url string, body io.Reader) (*http.Request, *httptest.ResponseRecorder) {
+	return NewRequestWithContentType(method, url, body, "application/json")
+}
+
+func NewRequestWithContentType(method, url string, body io.Reader, contentType string) (*http.Request, *httptest.ResponseRecorder) {
 	request, _ := http.NewRequest(method, url, body)
-	request.Header.Add("Content-Type", "application/json")
+	request.Header.Add("Content-Type", contentType)
 	return request, httptest.NewRecorder()
 }

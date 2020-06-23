@@ -13,16 +13,12 @@ func NewApiError(err error) api.Error {
 		var statusCode int
 
 		switch customError.Type() {
-		case errors.UserError:
-			statusCode = http.StatusBadRequest
-		case errors.NotFound:
-			statusCode = http.StatusNotFound
 		case errors.StatusUnsupportedMediaType:
 			statusCode = http.StatusUnsupportedMediaType
-		case errors.NotModified:
-			statusCode = http.StatusNotModified
 		case errors.Forbidden:
 			statusCode = http.StatusForbidden
+		case errors.UserError:
+			statusCode = http.StatusBadRequest
 		default:
 			statusCode = http.StatusInternalServerError
 		}

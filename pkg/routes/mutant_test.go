@@ -27,15 +27,15 @@ func (builder *mutantMocks) build() *gin.Engine {
 	return router
 }
 
-func routeSetUp(t *testing.T) (*gin.Engine, *mutantMocks) {
+func mutantSetUp(t *testing.T) (*gin.Engine, *mutantMocks) {
 	ctrl := gomock.NewController(t)
 
-	mocks := &mutantMocks{
+	mutantMocks := &mutantMocks{
 		ctrl:   ctrl,
 		mutant: mocks.NewMockMutant(ctrl),
 	}
 
-	return mocks.build(), mocks
+	return mutantMocks.build(), mutantMocks
 }
 
 var mutantApi = api.Mutant{
@@ -46,14 +46,17 @@ func TestMutantHandler(t *testing.T) {
 	t.Run("Is mutant", func(t *testing.T) { isMutant(t) })
 	t.Run("Is not mutant", func(t *testing.T) { isNotMutant(t) })
 	t.Run("Mutant error", func(t *testing.T) { mutantError(t) })
+	t.Run("Mutant panic error", func(t *testing.T) { mutantPanicError(t) })
+	t.Run("Mutant invalid content-type", func(t *testing.T) { mutantInvalidContentType(t) })
+	t.Run("Mutant decode body error", func(t *testing.T) { mutantDecodeBodyError(t) })
 }
 
 func isMutant(t *testing.T) {
-	router, mocks := routeSetUp(t)
-	defer mocks.ctrl.Finish()
+	router, mutMocks := mutantSetUp(t)
+	defer mutMocks.ctrl.Finish()
 
 	true := true
-	mocks.mutant.EXPECT().
+	mutMocks.mutant.EXPECT().
 		IsMutant(mutantApi.Dna).
 		Return(&true, nil)
 
@@ -66,11 +69,11 @@ func isMutant(t *testing.T) {
 }
 
 func isNotMutant(t *testing.T) {
-	router, mocks := routeSetUp(t)
-	defer mocks.ctrl.Finish()
+	router, mutMocks := mutantSetUp(t)
+	defer mutMocks.ctrl.Finish()
 
 	false := false
-	mocks.mutant.EXPECT().
+	mutMocks.mutant.EXPECT().
 		IsMutant(mutantApi.Dna).
 		Return(&false, nil)
 
@@ -79,16 +82,16 @@ func isNotMutant(t *testing.T) {
 
 	router.ServeHTTP(response, request)
 
-	assert.Equal(t, response.Code, 403)
+	assert.Equal(t, 403, response.Code)
 }
 
 func mutantError(t *testing.T) {
-	router, mocks := routeSetUp(t)
-	defer mocks.ctrl.Finish()
+	router, mutMocks := mutantSetUp(t)
+	defer mutMocks.ctrl.Finish()
 
 	err := fmt.Errorf("some error")
 
-	mocks.mutant.EXPECT().
+	mutMocks.mutant.EXPECT().
 		IsMutant(mutantApi.Dna).
 		Return(nil, err)
 
@@ -97,5 +100,48 @@ func mutantError(t *testing.T) {
 
 	router.ServeHTTP(response, request)
 
-	assert.Equal(t, response.Code, 500)
+	assert.Equal(t, 500, response.Code)
+}
+
+type mutantPanicMock struct {
+}
+
+func (_m *mutantPanicMock) IsMutant(dna []string) (*bool, error) {
+	panic("something happened")
+}
+
+func mutantPanicError(t *testing.T) {
+	panicMock := mutantPanicMock{}
+	router := test_fixture.SetupRouter()
+	addMutantHandler(router, log.NewLogger(true), &panicMock)
+
+	bodyStr, _ := json.Marshal(mutantApi)
+	request, response := test_fixture.NewRequest("POST", "/mutant", bytes.NewBuffer(bodyStr))
+
+	router.ServeHTTP(response, request)
+
+	assert.Equal(t, 500, response.Code)
+}
+
+func mutantInvalidContentType(t *testing.T) {
+	router, mutMocks := mutantSetUp(t)
+	defer mutMocks.ctrl.Finish()
+
+	bodyStr, _ := json.Marshal(mutantApi)
+	request, response := test_fixture.NewRequestWithContentType("POST", "/mutant", bytes.NewBuffer(bodyStr), "invalid-ct")
+
+	router.ServeHTTP(response, request)
+
+	assert.Equal(t, 415, response.Code)
+}
+
+func mutantDecodeBodyError(t *testing.T) {
+	router, mutMocks := mutantSetUp(t)
+	defer mutMocks.ctrl.Finish()
+
+	request, response := test_fixture.NewRequest("POST", "/mutant", bytes.NewBufferString("test"))
+
+	router.ServeHTTP(response, request)
+
+	assert.Equal(t, 400, response.Code)
 }

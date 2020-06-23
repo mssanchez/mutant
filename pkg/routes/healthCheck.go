@@ -7,7 +7,8 @@ import (
 )
 
 func addHealthCheckRoutes(e *gin.Engine) {
-	e.GET("/health", healthCheck)
+	e.GET("/health-check", healthCheck)
+	e.GET("/", healthCheck)
 }
 
 func healthCheck(c *gin.Context) {

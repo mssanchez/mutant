@@ -36,3 +36,20 @@ Aparecerá el siguiente mensaje:
 ```
 
 En ese caso la aplicación se encuentra lista y escuchando en el puerto 9290.
+
+## Tests
+
+### Cómo correr los tests?
+
+Estando parado en el root del proyecto ejecutar:
+```
+go generate ./...
+go test -v  ./...
+```
+ 
+ ### Coverage
+ 
+ Para generar el reporte de test coverage parado en el root del proyecto ejecutar:
+```
+go test ./... -coverprofile=cover.out
+```
