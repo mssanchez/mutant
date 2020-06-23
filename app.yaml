@@ -2,7 +2,3 @@ runtime: go113
 
 env_variables:
   ENVIRONMENT: "dev"
-
-handlers:
-  - url: /.*
-    script: auto
