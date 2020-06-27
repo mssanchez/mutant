@@ -6,7 +6,6 @@
     "database_name": "mutant",
     "collection_name": "mutants",
     "url": "mongodb+srv://mutant:%s@mutant-3dwbc.gcp.mongodb.net/mutant?retryWrites=true&w=majority",
-    "password": "Sj!Ti&8N3pFd4Fy",
     "disconnect_timeout_in_s": 5
   }
 }

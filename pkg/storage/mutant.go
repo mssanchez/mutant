@@ -11,11 +11,13 @@ import (
 	"time"
 )
 
+// MutantDoc represents a request made by the user and the result (if it's a mutant or not)
 type MutantDoc struct {
 	Dna      []string `bson:"dna" json:"dna"`
 	IsMutant bool     `bson:"is_mutant" json:"is_mutant"`
 }
 
+// MutantStorage handles all operations to the database related to saving and counting mutants documents
 type MutantStorage interface {
 	Save(val *MutantDoc) error
 	Count(isMutant bool) (int64, error)
@@ -31,6 +33,7 @@ type mongoClient struct {
 	cancelFunc           context.CancelFunc
 }
 
+// NewMutantsStorage builds a MutantStorage
 func NewMutantsStorage(config config.Configuration, log *logrus.Logger) MutantStorage {
 	log.Info("init storage package...")
 

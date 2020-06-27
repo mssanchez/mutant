@@ -12,11 +12,11 @@ import (
 	"strings"
 )
 
-// Function that given a gin Contexts returns a struct or an error
-type ApiHandlerFunc func(ctx *gin.Context) (interface{}, error)
+// APIHandlerFunc is a function that given a gin Contexts returns a struct or an error
+type APIHandlerFunc func(ctx *gin.Context) (interface{}, error)
 
-// Handles a request (logging the request, handles errors, status codes, etc)
-func WithinContext(handler ApiHandlerFunc, log *logrus.Logger) gin.HandlerFunc {
+// WithinContext handles a request (logging the request, handles errors, status codes, etc)
+func WithinContext(handler APIHandlerFunc, log *logrus.Logger) gin.HandlerFunc {
 	return func(ginContext *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
@@ -37,7 +37,7 @@ func WithinContext(handler ApiHandlerFunc, log *logrus.Logger) gin.HandlerFunc {
 
 func onError(ctx *gin.Context, log *logrus.Logger, err error) {
 	log.Errorf("%s", err)
-	apiError := NewApiError(err)
+	apiError := NewAPIError(err)
 	ctx.AbortWithStatusJSON(apiError.StatusCode, apiError)
 }
 
@@ -53,14 +53,17 @@ func logRequest(ctx *gin.Context, log *logrus.Logger) {
 	log.Infof("[REQUEST] %s %s %s", ctx.Request.Method, ctx.Request.URL, string(body))
 }
 
+// DecodeBody transforms a request body into a struct
 func DecodeBody(request *http.Request, target interface{}) error {
 	decoder := json.NewDecoder(request.Body)
 	if err := decoder.Decode(target); err != nil {
 		return errors.UserError.Wrapf(err, "Wrong JSON format: %v", request.Body)
 	}
+
 	return nil
 }
 
+// CheckContentType verifies that the given content-type is valid
 func CheckContentType(request *http.Request) error {
 	contentType := request.Header.Get("Content-Type")
 	if !strings.Contains(contentType, "application/json") {

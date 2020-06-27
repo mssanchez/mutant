@@ -10,7 +10,7 @@ import (
 	"mutant/api"
 	"mutant/pkg/log"
 	"mutant/pkg/routes/mocks"
-	"mutant/pkg/test_fixture"
+	"mutant/pkg/testfixture"
 	"testing"
 )
 
@@ -22,7 +22,7 @@ type mutantMocks struct {
 }
 
 func (builder *mutantMocks) build() *gin.Engine {
-	router := test_fixture.SetupRouter()
+	router := testfixture.SetupRouter()
 	addMutantHandler(router, log.NewLogger(true), builder.mutant)
 	return router
 }
@@ -38,7 +38,7 @@ func mutantSetUp(t *testing.T) (*gin.Engine, *mutantMocks) {
 	return mutantMocks.build(), mutantMocks
 }
 
-var mutantApi = api.Mutant{
+var mutantAPI = api.Mutant{
 	Dna: []string{"ATGCGA", "CAGTGC", "TTATGT", "AGAAGG"},
 }
 
@@ -57,11 +57,11 @@ func isMutant(t *testing.T) {
 
 	true := true
 	mutMocks.mutant.EXPECT().
-		IsMutant(mutantApi.Dna).
+		IsMutant(mutantAPI.Dna).
 		Return(&true, nil)
 
-	bodyStr, _ := json.Marshal(mutantApi)
-	request, response := test_fixture.NewRequest("POST", "/mutant", bytes.NewBuffer(bodyStr))
+	bodyStr, _ := json.Marshal(mutantAPI)
+	request, response := testfixture.NewRequest("POST", "/mutant", bytes.NewBuffer(bodyStr))
 
 	router.ServeHTTP(response, request)
 
@@ -74,11 +74,11 @@ func isNotMutant(t *testing.T) {
 
 	false := false
 	mutMocks.mutant.EXPECT().
-		IsMutant(mutantApi.Dna).
+		IsMutant(mutantAPI.Dna).
 		Return(&false, nil)
 
-	bodyStr, _ := json.Marshal(mutantApi)
-	request, response := test_fixture.NewRequest("POST", "/mutant", bytes.NewBuffer(bodyStr))
+	bodyStr, _ := json.Marshal(mutantAPI)
+	request, response := testfixture.NewRequest("POST", "/mutant", bytes.NewBuffer(bodyStr))
 
 	router.ServeHTTP(response, request)
 
@@ -92,11 +92,11 @@ func mutantError(t *testing.T) {
 	err := fmt.Errorf("some error")
 
 	mutMocks.mutant.EXPECT().
-		IsMutant(mutantApi.Dna).
+		IsMutant(mutantAPI.Dna).
 		Return(nil, err)
 
-	bodyStr, _ := json.Marshal(mutantApi)
-	request, response := test_fixture.NewRequest("POST", "/mutant", bytes.NewBuffer(bodyStr))
+	bodyStr, _ := json.Marshal(mutantAPI)
+	request, response := testfixture.NewRequest("POST", "/mutant", bytes.NewBuffer(bodyStr))
 
 	router.ServeHTTP(response, request)
 
@@ -112,11 +112,11 @@ func (_m *mutantPanicMock) IsMutant(dna []string) (*bool, error) {
 
 func mutantPanicError(t *testing.T) {
 	panicMock := mutantPanicMock{}
-	router := test_fixture.SetupRouter()
+	router := testfixture.SetupRouter()
 	addMutantHandler(router, log.NewLogger(true), &panicMock)
 
-	bodyStr, _ := json.Marshal(mutantApi)
-	request, response := test_fixture.NewRequest("POST", "/mutant", bytes.NewBuffer(bodyStr))
+	bodyStr, _ := json.Marshal(mutantAPI)
+	request, response := testfixture.NewRequest("POST", "/mutant", bytes.NewBuffer(bodyStr))
 
 	router.ServeHTTP(response, request)
 
@@ -127,8 +127,8 @@ func mutantInvalidContentType(t *testing.T) {
 	router, mutMocks := mutantSetUp(t)
 	defer mutMocks.ctrl.Finish()
 
-	bodyStr, _ := json.Marshal(mutantApi)
-	request, response := test_fixture.NewRequestWithContentType("POST", "/mutant", bytes.NewBuffer(bodyStr), "invalid-ct")
+	bodyStr, _ := json.Marshal(mutantAPI)
+	request, response := testfixture.NewRequestWithContentType("POST", "/mutant", bytes.NewBuffer(bodyStr), "invalid-ct")
 
 	router.ServeHTTP(response, request)
 
@@ -139,7 +139,7 @@ func mutantDecodeBodyError(t *testing.T) {
 	router, mutMocks := mutantSetUp(t)
 	defer mutMocks.ctrl.Finish()
 
-	request, response := test_fixture.NewRequest("POST", "/mutant", bytes.NewBufferString("test"))
+	request, response := testfixture.NewRequest("POST", "/mutant", bytes.NewBufferString("test"))
 
 	router.ServeHTTP(response, request)
 

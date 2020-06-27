@@ -10,6 +10,7 @@ import (
 type ErrorType uint
 
 const (
+	// NoType is an error without a specific type
 	NoType ErrorType = iota
 	UserError
 	StatusUnsupportedMediaType

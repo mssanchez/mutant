@@ -2,10 +2,12 @@ package stats
 
 import "mutant/pkg/storage"
 
+// Stats handles the application stats
 type Stats interface {
 	MutantStats() (*MutantStats, error)
 }
 
+// NewStats instanciates a new Stats interface
 func NewStats(mutantStorage storage.MutantStorage) Stats {
 	return &stats{mutantStorage}
 }
@@ -14,6 +16,7 @@ type stats struct {
 	mutantStorage storage.MutantStorage
 }
 
+// MutantStats holds information about mutant and not mutant requests
 type MutantStats struct {
 	CountMutant int64
 	CountHuman  int64

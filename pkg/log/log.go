@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// NewLogger builds and returns new Logger
 func NewLogger(debug bool) *logrus.Logger {
 	var l *logrus.Logger
 

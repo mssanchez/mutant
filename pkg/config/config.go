@@ -6,6 +6,7 @@ import (
 	"os"
 )
 
+// Configuration holds all the configurations needed to run the application
 type Configuration struct {
 	App
 	Environment string
@@ -20,6 +21,7 @@ type Server struct {
 	Port string `json:"port"`
 }
 
+// Mongodb holds configuration needed to connect to to MongoDB
 type Mongodb struct {
 	DatabaseName               string `json:"database_name"`
 	CollectionName             string `json:"collection_name"`
@@ -28,7 +30,7 @@ type Mongodb struct {
 	DisconnectTimeoutInSeconds int `json:"disconnect_timeout_in_s"`
 }
 
-// Initializes a Configuration
+// NewConfiguration initializes a Configuration
 func NewConfiguration() Configuration {
 	env := os.Getenv("ENVIRONMENT")
 	if env == "" {
@@ -41,7 +43,7 @@ func NewConfiguration() Configuration {
 	}
 }
 
-// Reads configuration from a json file
+// readApplicationConfig reads configuration from a json file
 func readApplicationConfig(env string) App {
 	var app App
 	var f *os.File

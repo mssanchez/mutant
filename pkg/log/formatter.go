@@ -5,11 +5,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// Formatter is used to format a given log entry
 type Formatter struct {
 	host string
 }
 
-// Formats a log entry
+// Format formats a log entry
 func (f *Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	msg := fmt.Sprintf("%s %s [%s]: %s",

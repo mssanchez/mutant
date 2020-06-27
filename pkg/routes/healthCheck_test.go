@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"mutant/pkg/test_fixture"
+	"mutant/pkg/testfixture"
 	"testing"
 )
 
@@ -13,7 +13,7 @@ type healthCheckMocks struct {
 }
 
 func (builder *healthCheckMocks) build() *gin.Engine {
-	router := test_fixture.SetupRouter()
+	router := testfixture.SetupRouter()
 	addHealthCheckRoutes(router)
 
 	return router
@@ -33,7 +33,7 @@ func TestHealthCheckHandler(t *testing.T) {
 	router, hcMocks := healthCheckSetUp(t)
 	defer hcMocks.ctrl.Finish()
 
-	request, response := test_fixture.NewRequest("GET", "/health-check", nil)
+	request, response := testfixture.NewRequest("GET", "/health-check", nil)
 
 	router.ServeHTTP(response, request)
 
