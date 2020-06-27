@@ -87,3 +87,26 @@ mutant/pkg/stats/stats.go:44:		safeDivideFloat		100.0%
 total:					(statements)		91.2%
 ```
 El reporte y un HTML con los resultados se pueden encontrar en el directorio [coverage](coverage).
+
+# Ejemplos
+
+### Verificar si una cadena de ADN es mutante
+```
+curl -v -X POST 'https://positive-apex-280419.ue.r.appspot.com/mutant' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "dna": [
+    "ATGCGA",
+    "CAGTGC",
+    "TTATGT",
+    "AGAAGG",
+    "CCCCTA",
+    "TCACTG"
+  ]
+}'
+```
+
+### Visualizar estadísticas de cadenas de ADN
+```
+curl -v -X GET 'https://positive-apex-280419.ue.r.appspot.com/stats'
+```
