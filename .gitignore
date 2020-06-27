@@ -1,3 +1,4 @@
 .idea
 mutant
 .gcloudignore
+/pkg/config/support/dev/password

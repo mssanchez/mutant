@@ -53,3 +53,10 @@ func TestWrapfNoCustomError(t *testing.T) {
 	assert.Equal(t, NoType, wrappedError.Type())
 	assert.EqualError(t, wrappedError, "error 1: some error")
 }
+
+func TestNewf(t *testing.T) {
+	err := UserError.Newf("an_error: %s", "some description")
+
+	assert.Equal(t, UserError, err.Type())
+	assert.EqualError(t, err, "an_error: some description")
+}

@@ -56,9 +56,9 @@
 				
 				<option value="file0">mutant/pkg/app/app.go (60.0%)</option>
 				
-				<option value="file1">mutant/pkg/config/config.go (89.5%)</option>
+				<option value="file1">mutant/pkg/config/config.go (87.2%)</option>
 				
-				<option value="file2">mutant/pkg/errors/error.go (93.8%)</option>
+				<option value="file2">mutant/pkg/errors/error.go (100.0%)</option>
 				
 				<option value="file3">mutant/pkg/mutant/mutant.go (100.0%)</option>
 				
@@ -150,9 +150,11 @@ func (app *Application) Shutdown() <span class="cov0" title="0">{
 		<pre class="file" id="file1" style="display: none">package config
 
 import (
+        "bufio"
         "encoding/json"
         "fmt"
         "os"
+        "strings"
 )
 
 // Configuration holds all the configurations needed to run the application
@@ -219,7 +221,44 @@ func readApplicationConfig(env string) App <span class="cov8" title="1">{
                 panic(err)</span>
         }
 
+        <span class="cov8" title="1">if password := readDatastorePassword(env); password != nil </span><span class="cov8" title="1">{
+                app.Mongodb.Password = *password
+        }</span>
+
         <span class="cov8" title="1">return app</span>
+}
+
+func readDatastorePassword(env string) *string <span class="cov8" title="1">{
+        var f *os.File
+        var fileName string
+        var err error
+
+        switch </span>{
+        case env == "test":<span class="cov8" title="1">
+                fileName = "./support/" + env + "/password"</span>
+        default:<span class="cov0" title="0">
+                fileName = "./pkg/config/support/" + env + "/password"</span>
+        }
+
+        <span class="cov8" title="1">f, err = os.Open(fileName)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil
+        }</span>
+
+        <span class="cov8" title="1">defer f.Close()
+
+        scanner := bufio.NewScanner(f)
+        for scanner.Scan() </span><span class="cov8" title="1">{
+                line := scanner.Text()
+                if strings.Contains(line, "=") </span><span class="cov8" title="1">{
+                        splitted := strings.Split(line, "=")
+                        if splitted[0] == "password" </span><span class="cov8" title="1">{
+                                return &amp;splitted[1]
+                        }</span>
+                }
+        }
+
+        <span class="cov0" title="0">return nil</span>
 }
 </pre>
 		
@@ -261,7 +300,7 @@ func (errorType ErrorType) New(msg string) Error <span class="cov8" title="1">{
 }</span>
 
 // Newf creates a new customError with formatted message
-func (errorType ErrorType) Newf(msg string, args ...interface{}) Error <span class="cov0" title="0">{
+func (errorType ErrorType) Newf(msg string, args ...interface{}) Error <span class="cov8" title="1">{
         return customError{errorType: errorType, originalError: fmt.Errorf(msg, args...)}
 }</span>
 

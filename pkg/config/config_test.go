@@ -23,6 +23,7 @@ func parseConfigOk(t *testing.T) {
 	assert.NotEmpty(t, config.Mongodb.DatabaseName)
 	assert.NotEmpty(t, config.Mongodb.DisconnectTimeoutInSeconds)
 	assert.NotEmpty(t, config.Mongodb.Url)
+	assert.NotEmpty(t, config.Mongodb.Password)
 
 	// Server config
 	assert.NotEmpty(t, config.Server.Port)

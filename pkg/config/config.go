@@ -1,9 +1,11 @@
 package config
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 )
 
 // Configuration holds all the configurations needed to run the application
@@ -70,5 +72,42 @@ func readApplicationConfig(env string) App {
 		panic(err)
 	}
 
+	if password := readDatastorePassword(env); password != nil {
+		app.Mongodb.Password = *password
+	}
+
 	return app
+}
+
+func readDatastorePassword(env string) *string {
+	var f *os.File
+	var fileName string
+	var err error
+
+	switch {
+	case env == "test":
+		fileName = "./support/" + env + "/password"
+	default:
+		fileName = "./pkg/config/support/" + env + "/password"
+	}
+
+	f, err = os.Open(fileName)
+	if err != nil {
+		return nil
+	}
+
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.Contains(line, "=") {
+			splitted := strings.Split(line, "=")
+			if splitted[0] == "password" {
+				return &splitted[1]
+			}
+		}
+	}
+
+	return nil
 }

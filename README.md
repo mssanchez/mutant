@@ -31,10 +31,10 @@ Posicionado en el root del proyecto, ejecutar:
 Aparecerá el siguiente mensaje:
 
 ```
-2020-06-15T23:10:02.637 info [PMITN010500]: init storage package...
-2020-06-15T23:10:02.637 info [PMITN010500]: storage client with local environment
-2020-06-15T23:10:02.637 info [PMITN010500]: init routes package...
-2020-06-15T23:10:02.637 info [PMITN010500]: Starting Server on :8080
+2020-06-27T20:42:39.882 info [PMITN010500]: init storage package...
+2020-06-27T20:42:39.882 info [PMITN010500]: storage client with local environment
+2020-06-27T20:42:39.883 info [PMITN010500]: init routes package...
+2020-06-27T20:42:39.883 info [PMITN010500]: Starting Server on :8080
 ```
 
 En ese caso la aplicación se encuentra lista y escuchando en el puerto 8080.
@@ -53,10 +53,11 @@ Lo cual generará el siguiente reporte:
 mutant/pkg/app/app.go:24:		NewApplication		100.0%
 mutant/pkg/app/app.go:44:		RunServer		0.0%
 mutant/pkg/app/app.go:57:		Shutdown		0.0%
-mutant/pkg/config/config.go:34:		NewConfiguration	100.0%
-mutant/pkg/config/config.go:47:		readApplicationConfig	86.7%
+mutant/pkg/config/config.go:36:		NewConfiguration	100.0%
+mutant/pkg/config/config.go:49:		readApplicationConfig	88.2%
+mutant/pkg/config/config.go:82:		readDatastorePassword	83.3%
 mutant/pkg/errors/error.go:34:		New			100.0%
-mutant/pkg/errors/error.go:39:		Newf			0.0%
+mutant/pkg/errors/error.go:39:		Newf			100.0%
 mutant/pkg/errors/error.go:44:		Wrapf			100.0%
 mutant/pkg/errors/error.go:49:		New			100.0%
 mutant/pkg/errors/error.go:54:		Newf			100.0%
@@ -84,7 +85,7 @@ mutant/pkg/routes/stats.go:25:		stats			100.0%
 mutant/pkg/stats/stats.go:11:		NewStats		100.0%
 mutant/pkg/stats/stats.go:26:		MutantStats		100.0%
 mutant/pkg/stats/stats.go:44:		safeDivideFloat		100.0%
-total:					(statements)		91.2%
+total:					(statements)		91.0%
 ```
 El reporte y un HTML con los resultados se pueden encontrar en el directorio [coverage](coverage).
 
@@ -110,3 +111,20 @@ curl -v -X POST 'https://positive-apex-280419.ue.r.appspot.com/mutant' \
 ```
 curl -v -X GET 'https://positive-apex-280419.ue.r.appspot.com/stats'
 ```
+
+# Deploy
+
+### Requisitos
+- Instalar el SDK de Google Cloud siguiendo las siguientes [instrucciones](https://cloud.google.com/sdk/install?hl=es)
+- Crear un archivo de nombre 'password' en el directorio /pkg/config/support/dev con las credenciales para conectarse a la base de datos.
+Deberá tener el siguiente formato:
+    ```
+    password=some-value
+    ```
+
+### Ejecución
+
+Ejecutar el script de [deploy](deploy.sh) parado sobre el root del proyecto.
+El script pedirá confirmación antes de deployar.
+
+Una vez finalizado, se muestran los logs de la aplicación.
