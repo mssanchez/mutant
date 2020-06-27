@@ -1,4 +1,4 @@
-package test_fixture
+package testFixture
 
 import (
 	"io"
