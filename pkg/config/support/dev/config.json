@@ -1,5 +1,11 @@
 {
   "server": {
-    "port": ":9290"
+    "port": ":8080"
+  },
+  "mongodb": {
+    "database_name": "mutant",
+    "collection_name": "mutants",
+    "url": "mongodb+srv://mutant:%s@mutant-3dwbc.gcp.mongodb.net/mutant?retryWrites=true&w=majority",
+    "disconnect_timeout_in_s": 5
   }
 }

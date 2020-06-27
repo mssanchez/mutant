@@ -6,6 +6,7 @@
     "database_name": "mutant-local",
     "collection_name": "mutants",
     "url": "mongodb://127.0.0.1:27017/mutant-local",
-    "disconnect_timeout_in_s": 5
+    "disconnect_timeout_in_s": 5,
+    "password": "test"
   }
 }

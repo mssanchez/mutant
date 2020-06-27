@@ -10,7 +10,7 @@ import (
 	"mutant/pkg/log"
 	"mutant/pkg/routes/mocks"
 	"mutant/pkg/stats"
-	"mutant/pkg/test_fixture"
+	"mutant/pkg/testfixture"
 	"testing"
 )
 
@@ -22,7 +22,7 @@ type statsMocks struct {
 }
 
 func (builder *statsMocks) build() *gin.Engine {
-	router := test_fixture.SetupRouter()
+	router := testfixture.SetupRouter()
 	addStatsHandler(router, log.NewLogger(true), builder.stats)
 	return router
 }
@@ -61,7 +61,7 @@ func statsOk(t *testing.T) {
 
 	mocks.stats.EXPECT().MutantStats().Return(&mutStats, nil)
 
-	request, response := test_fixture.NewRequest("GET", "/stats", nil)
+	request, response := testfixture.NewRequest("GET", "/stats", nil)
 
 	router.ServeHTTP(response, request)
 
@@ -80,7 +80,7 @@ func statsError(t *testing.T) {
 
 	mocks.stats.EXPECT().MutantStats().Return(nil, err)
 
-	request, response := test_fixture.NewRequest("GET", "/stats", nil)
+	request, response := testfixture.NewRequest("GET", "/stats", nil)
 
 	router.ServeHTTP(response, request)
 

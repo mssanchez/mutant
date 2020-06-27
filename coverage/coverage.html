@@ -1,0 +1,705 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">mutant/pkg/app/app.go (60.0%)</option>
+				
+				<option value="file1">mutant/pkg/config/config.go (89.5%)</option>
+				
+				<option value="file2">mutant/pkg/errors/error.go (93.8%)</option>
+				
+				<option value="file3">mutant/pkg/mutant/mutant.go (100.0%)</option>
+				
+				<option value="file4">mutant/pkg/mutant/validator.go (100.0%)</option>
+				
+				<option value="file5">mutant/pkg/routes/healthCheck.go (100.0%)</option>
+				
+				<option value="file6">mutant/pkg/routes/mutant.go (100.0%)</option>
+				
+				<option value="file7">mutant/pkg/routes/routes.go (0.0%)</option>
+				
+				<option value="file8">mutant/pkg/routes/stats.go (100.0%)</option>
+				
+				<option value="file9">mutant/pkg/stats/stats.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package app
+
+import (
+        "github.com/sirupsen/logrus"
+        "mutant/pkg/config"
+        "mutant/pkg/log"
+        "mutant/pkg/mutant"
+        "mutant/pkg/routes"
+        "mutant/pkg/server"
+        "mutant/pkg/stats"
+        "mutant/pkg/storage"
+        "net/http"
+)
+
+// Application is used to initialize the application
+type Application struct {
+        log           *logrus.Logger
+        httpRoutes    *routes.HTTPRoutes
+        configuration config.Configuration
+        mutantStorage storage.MutantStorage
+}
+
+// NewApplication instantiates a new application
+func NewApplication(configuration config.Configuration) *Application <span class="cov8" title="1">{
+        logger := log.NewLogger(true)
+
+        mutantStorage := storage.NewMutantsStorage(configuration, logger)
+
+        mutantSvc := mutant.NewMutant(mutantStorage)
+
+        mutantStats := stats.NewStats(mutantStorage)
+
+        httpRoutes := routes.NewHTTPRoutes(logger, mutantSvc, mutantStats)
+
+        return &amp;Application{
+                log:           logger,
+                httpRoutes:    &amp;httpRoutes,
+                configuration: configuration,
+                mutantStorage: mutantStorage,
+        }
+}</span>
+
+// RunServer starts the server in the configured port
+func (app *Application) RunServer() <span class="cov0" title="0">{
+
+        s := &amp;http.Server{
+                Addr:    app.configuration.Server.Port,
+                Handler: server.NewGinHandler(app.httpRoutes),
+        }
+
+        go server.StartServer(s, app.log)
+
+        server.ListenShutdownSignal(s, app.log, app.Shutdown)
+}</span>
+
+// Shutdown ensures all the dependencies of the application shutdown correctly
+func (app *Application) Shutdown() <span class="cov0" title="0">{
+        app.mutantStorage.Shutdown()
+}</span>
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package config
+
+import (
+        "encoding/json"
+        "fmt"
+        "os"
+)
+
+// Configuration holds all the configurations needed to run the application
+type Configuration struct {
+        App
+        Environment string
+}
+
+type App struct {
+        Server  Server  `json:"server"`
+        Mongodb Mongodb `json:"mongodb"`
+}
+
+type Server struct {
+        Port string `json:"port"`
+}
+
+// Mongodb holds configuration needed to connect to to MongoDB
+type Mongodb struct {
+        DatabaseName               string `json:"database_name"`
+        CollectionName             string `json:"collection_name"`
+        Url                        string `json:"url"`
+        Password                   string
+        DisconnectTimeoutInSeconds int `json:"disconnect_timeout_in_s"`
+}
+
+// NewConfiguration initializes a Configuration
+func NewConfiguration() Configuration <span class="cov8" title="1">{
+        env := os.Getenv("ENVIRONMENT")
+        if env == "" </span><span class="cov8" title="1">{
+                env = "local"
+        }</span>
+
+        <span class="cov8" title="1">return Configuration{
+                Environment: env,
+                App:         readApplicationConfig(env),
+        }</span>
+}
+
+// readApplicationConfig reads configuration from a json file
+func readApplicationConfig(env string) App <span class="cov8" title="1">{
+        var app App
+        var f *os.File
+        var err error
+
+        switch </span>{
+        case env == "test":<span class="cov8" title="1">
+                f, err = os.Open("./support/" + env + "/config.json")</span>
+        default:<span class="cov8" title="1">
+                f, err = os.Open("./pkg/config/support/" + env + "/config.json")</span>
+        }
+
+        <span class="cov8" title="1">if err != nil </span><span class="cov8" title="1">{
+                fmt.Println(err)
+                panic(err)</span>
+        }
+
+        <span class="cov8" title="1">defer f.Close()
+
+        jsonParser := json.NewDecoder(f)
+
+        if err = jsonParser.Decode(&amp;app); err != nil </span><span class="cov0" title="0">{
+                fmt.Println(err)
+                panic(err)</span>
+        }
+
+        <span class="cov8" title="1">return app</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package errors
+
+import (
+        "fmt"
+
+        "github.com/pkg/errors"
+)
+
+// ErrorType is the type of an error
+type ErrorType uint
+
+const (
+        // NoType is an error without a specific type
+        NoType ErrorType = iota
+        UserError
+        StatusUnsupportedMediaType
+        Forbidden
+)
+
+type Error interface {
+        Type() ErrorType
+        Error() string
+        Context() map[string]string
+        AddSingleContext(string, string) Error
+}
+
+type customError struct {
+        errorType     ErrorType
+        originalError error
+        context       map[string]string
+}
+
+// New creates a new customError
+func (errorType ErrorType) New(msg string) Error <span class="cov8" title="1">{
+        return customError{errorType: errorType, originalError: errors.New(msg)}
+}</span>
+
+// Newf creates a new customError with formatted message
+func (errorType ErrorType) Newf(msg string, args ...interface{}) Error <span class="cov0" title="0">{
+        return customError{errorType: errorType, originalError: fmt.Errorf(msg, args...)}
+}</span>
+
+// Wrapf creates a new wrapped error with formatted message
+func (errorType ErrorType) Wrapf(err error, msg string, args ...interface{}) Error <span class="cov8" title="1">{
+        return customError{errorType: errorType, originalError: errors.Wrapf(err, msg, args...)}
+}</span>
+
+// New creates a no type error
+func New(msg string) Error <span class="cov8" title="1">{
+        return customError{errorType: NoType, originalError: errors.New(msg)}
+}</span>
+
+// Newf creates a no type error with formatted message
+func Newf(msg string, args ...interface{}) Error <span class="cov8" title="1">{
+        return customError{errorType: NoType, originalError: errors.New(fmt.Sprintf(msg, args...))}
+}</span>
+
+// Wrapf an error with format string
+func Wrapf(err error, msg string, args ...interface{}) Error <span class="cov8" title="1">{
+        wrappedError := errors.Wrapf(err, msg, args...)
+        if customErr, ok := err.(customError); ok </span><span class="cov8" title="1">{
+                return customError{
+                        errorType:     customErr.errorType,
+                        originalError: wrappedError,
+                        context:       customErr.context,
+                }
+        }</span>
+
+        <span class="cov8" title="1">return customError{errorType: NoType, originalError: wrappedError}</span>
+}
+
+// AddErrorContext adds a context to an error
+func (err customError) AddSingleContext(field, message string) Error <span class="cov8" title="1">{
+        if err.context == nil </span><span class="cov8" title="1">{
+                err.context = map[string]string{}
+        }</span>
+
+        <span class="cov8" title="1">err.context[field] = message
+
+        return err</span>
+}
+
+// GetErrorContext returns the error context
+func (err customError) Context() map[string]string <span class="cov8" title="1">{
+        return err.context
+}</span>
+
+// Error returns the mssage of a customError
+func (err customError) Error() string <span class="cov8" title="1">{
+        return err.originalError.Error()
+}</span>
+
+// GetType returns the error type
+func (err customError) Type() ErrorType <span class="cov8" title="1">{
+        return err.errorType
+}</span>
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package mutant
+
+import (
+        "mutant/pkg/storage"
+)
+
+// Mutant is used to determine whether a dna is mutant or not
+type Mutant interface {
+        IsMutant(dna []string) (*bool, error)
+}
+
+// NewMutant builds a new Mutant
+func NewMutant(mutantStorage storage.MutantStorage) Mutant <span class="cov8" title="1">{
+        return &amp;mutant{
+                mutantStorage: mutantStorage,
+                validators:    []SequenceValidator{&amp;lengthValidator{}, &amp;charactersValidator{}},
+        }
+}</span>
+
+// mutant is the struct used to implement the Mutant interface
+type mutant struct {
+        mutantStorage storage.MutantStorage
+        validators    []SequenceValidator
+}
+
+// IsMutant returns true if there is more than one four letter sequence equal, obliquely, horizontally or vertically.
+// It validates the given input, and returns an error if it's invalid
+func (m *mutant) IsMutant(dna []string) (*bool, error) <span class="cov8" title="1">{
+        mutants := 0
+        result := false
+        for i, sequence := range dna </span><span class="cov8" title="1">{
+                if err := m.validateSequence(sequence, dna); err != nil </span><span class="cov8" title="1">{
+                        return nil, err
+                }</span>
+
+                <span class="cov8" title="1">if m.isVerticalMutant(dna, sequence, i) </span><span class="cov8" title="1">{
+                        mutants++
+                }</span>
+
+                <span class="cov8" title="1">if m.isObliqueMutant(dna, sequence, i) </span><span class="cov8" title="1">{
+                        mutants++
+                }</span>
+
+                <span class="cov8" title="1">if m.isHorizontalMutant(sequence) </span><span class="cov8" title="1">{
+                        mutants++
+                }</span>
+
+                <span class="cov8" title="1">if mutants &gt;= 2 </span><span class="cov8" title="1">{
+                        result = true
+                        break</span>
+                }
+        }
+
+        <span class="cov8" title="1">err := m.mutantStorage.Save(&amp;storage.MutantDoc{
+                Dna:      dna,
+                IsMutant: result,
+        })
+
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return &amp;result, nil</span>
+}
+
+// isVerticalMutant checks if the sequence is a vertical mutant.
+// A vertical mutant has four equal consecutive letters displayed vertically
+func (m *mutant) isVerticalMutant(dna []string, sequence string, index int) bool <span class="cov8" title="1">{
+        if index &lt;= len(dna)-4 </span><span class="cov8" title="1">{
+                next1 := dna[index+1]
+                next2 := dna[index+2]
+                next3 := dna[index+3]
+                for i := 0; i &lt;= len(sequence)-4; i++ </span><span class="cov8" title="1">{
+                        base := sequence[i]
+                        if base == next1[i] &amp;&amp; base == next2[i] &amp;&amp; base == next3[i] </span><span class="cov8" title="1">{
+                                return true
+                        }</span>
+                }
+        }
+
+        <span class="cov8" title="1">return false</span>
+}
+
+// isObliqueMutant checks if the sequence is an oblique mutant.
+// An oblique mutant has four equal consecutive letters displayed in an oblique shape
+func (m *mutant) isObliqueMutant(dna []string, sequence string, index int) bool <span class="cov8" title="1">{
+        if index &lt;= len(dna)-4 </span><span class="cov8" title="1">{
+                next1 := dna[index+1]
+                next2 := dna[index+2]
+                next3 := dna[index+3]
+                for i := 0; i &lt;= len(sequence)-4; i++ </span><span class="cov8" title="1">{
+                        base := sequence[i]
+                        if base == next1[i+1] &amp;&amp; base == next2[i+2] &amp;&amp; base == next3[i+3] </span><span class="cov8" title="1">{
+                                return true
+                        }</span>
+                }
+        }
+
+        <span class="cov8" title="1">return false</span>
+}
+
+// isHorizontalMutant checks if the sequence is an horizontal mutant.
+// A horizontal mutant has four equal consecutive letters
+// For example: "AAAA" returns true, and "ABAA" returns false
+func (m *mutant) isHorizontalMutant(sequence string) bool <span class="cov8" title="1">{
+        for i := 0; i &lt;= len(sequence)-4; i++ </span><span class="cov8" title="1">{
+                base := sequence[i]
+                if base == sequence[i+1] &amp;&amp; base == sequence[i+2] &amp;&amp; base == sequence[i+3] </span><span class="cov8" title="1">{
+                        return true
+                }</span>
+        }
+
+        <span class="cov8" title="1">return false</span>
+}
+
+// validateSequence validates that the given sequence is valid.
+// A valid sequence meets the given criteria:
+// - contains only the letters A, T, C or G
+// - has the same length as the dna sequences array
+func (m *mutant) validateSequence(sequence string, dna []string) error <span class="cov8" title="1">{
+        for _, v := range m.validators </span><span class="cov8" title="1">{
+                if err := v.Validate(sequence, dna); err != nil </span><span class="cov8" title="1">{
+                        return err
+                }</span>
+        }
+
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package mutant
+
+import "fmt"
+
+// SequenceValidator verifies if a sequence of a dna is valid
+type SequenceValidator interface {
+        Validate(sequence string, dna []string) error
+}
+
+type lengthValidator struct{}
+
+func (lv *lengthValidator) Validate(sequence string, dna []string) error <span class="cov8" title="1">{
+        if len(sequence) != len(dna) </span><span class="cov8" title="1">{
+                return fmt.Errorf("invalid sequence %s length", sequence)
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+type charactersValidator struct{}
+
+func (cv *charactersValidator) Validate(sequence string, dna []string) error <span class="cov8" title="1">{
+        for _, r := range sequence </span><span class="cov8" title="1">{
+                if r != 'A' &amp;&amp; r != 'T' &amp;&amp; r != 'C' &amp;&amp; r != 'G' </span><span class="cov8" title="1">{
+                        return fmt.Errorf("invalid character %s in dna sequence %s", string(r), sequence)
+                }</span>
+        }
+
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package routes
+
+import (
+        "net/http"
+
+        "github.com/gin-gonic/gin"
+)
+
+func addHealthCheckRoutes(e *gin.Engine) <span class="cov8" title="1">{
+        e.GET("/health-check", healthCheck)
+        e.GET("/", healthCheck)
+}</span>
+
+func healthCheck(c *gin.Context) <span class="cov8" title="1">{
+        c.Header("cache-control", "no-cache")
+        c.String(http.StatusOK, "OK")
+}</span>
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package routes
+
+import (
+        "github.com/gin-gonic/gin"
+        "github.com/sirupsen/logrus"
+        "mutant/api"
+        "mutant/pkg/errors"
+        "mutant/pkg/http"
+        "mutant/pkg/mutant"
+)
+
+type mutantHandler struct {
+        log           *logrus.Logger
+        mutantService mutant.Mutant
+}
+
+func addMutantHandler(e *gin.Engine, log *logrus.Logger, m mutant.Mutant) <span class="cov8" title="1">{
+        handler := &amp;mutantHandler{
+                log:           log,
+                mutantService: m,
+        }
+
+        e.POST("/mutant", http.WithinContext(handler.Mutant, log))
+}</span>
+
+func (s *mutantHandler) Mutant(ctx *gin.Context) (interface{}, error) <span class="cov8" title="1">{
+
+        if err := http.CheckContentType(ctx.Request); err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">var apiMutant api.Mutant
+        if err := http.DecodeBody(ctx.Request, &amp;apiMutant); err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">if result, err := s.mutantService.IsMutant(apiMutant.Dna); err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span> else<span class="cov8" title="1"> if !*result </span><span class="cov8" title="1">{
+                return nil, errors.Forbidden.Newf("not mutant")
+        }</span>
+
+        <span class="cov8" title="1">return nil, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package routes
+
+import (
+        "github.com/gin-gonic/gin"
+        "github.com/sirupsen/logrus"
+        "mutant/pkg/mutant"
+        "mutant/pkg/stats"
+)
+
+// HTTPRoutes is in charge of adding all http routes
+type HTTPRoutes struct {
+        log    *logrus.Logger
+        mutant mutant.Mutant
+        stats  stats.Stats
+}
+
+// NewHTTPRoutes builds an HTTPRoutes
+func NewHTTPRoutes(log *logrus.Logger, mutant mutant.Mutant, stats stats.Stats) HTTPRoutes <span class="cov0" title="0">{
+        log.Info("init routes package...")
+
+        return HTTPRoutes{
+                log:    log,
+                mutant: mutant,
+                stats:  stats,
+        }
+}</span>
+
+// AddAllHTTPRoutes adds health check, mutant and stats routes
+func (r *HTTPRoutes) AddAllHTTPRoutes(e *gin.Engine) <span class="cov0" title="0">{
+        addHealthCheckRoutes(e)
+        addMutantHandler(e, r.log, r.mutant)
+        addStatsHandler(e, r.log, r.stats)
+}</span>
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">package routes
+
+import (
+        "github.com/gin-gonic/gin"
+        "github.com/sirupsen/logrus"
+        "mutant/api"
+        "mutant/pkg/http"
+        "mutant/pkg/stats"
+)
+
+type statsHandler struct {
+        log          *logrus.Logger
+        statsService stats.Stats
+}
+
+func addStatsHandler(e *gin.Engine, log *logrus.Logger, m stats.Stats) <span class="cov8" title="1">{
+        handler := &amp;statsHandler{
+                log:          log,
+                statsService: m,
+        }
+
+        e.GET("/stats", http.WithinContext(handler.stats, log))
+}</span>
+
+func (s *statsHandler) stats(ctx *gin.Context) (interface{}, error) <span class="cov8" title="1">{
+        result, err := s.statsService.MutantStats()
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return api.MutantStats{
+                CountMutantDna: result.CountMutant,
+                CountHumanDna:  result.CountHuman,
+                Ratio:          result.Ratio,
+        }, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">package stats
+
+import "mutant/pkg/storage"
+
+// Stats handles the application stats
+type Stats interface {
+        MutantStats() (*MutantStats, error)
+}
+
+// NewStats instanciates a new Stats interface
+func NewStats(mutantStorage storage.MutantStorage) Stats <span class="cov8" title="1">{
+        return &amp;stats{mutantStorage}
+}</span>
+
+type stats struct {
+        mutantStorage storage.MutantStorage
+}
+
+// MutantStats holds information about mutant and not mutant requests
+type MutantStats struct {
+        CountMutant int64
+        CountHuman  int64
+        Ratio       float64
+}
+
+func (s *stats) MutantStats() (*MutantStats, error) <span class="cov8" title="1">{
+        var mutantCount int64
+        var humanCount int64
+        var err error
+
+        if mutantCount, err = s.mutantStorage.Count(true); err == nil </span><span class="cov8" title="1">{
+                if humanCount, err = s.mutantStorage.Count(false); err == nil </span><span class="cov8" title="1">{
+                        return &amp;MutantStats{
+                                CountMutant: mutantCount,
+                                CountHuman:  humanCount,
+                                Ratio:       s.safeDivideFloat(float64(mutantCount), float64(humanCount)),
+                        }, nil
+                }</span>
+        }
+
+        <span class="cov8" title="1">return nil, err</span>
+}
+
+func (s *stats) safeDivideFloat(a, b float64) float64 <span class="cov8" title="1">{
+        if b == 0 </span><span class="cov8" title="1">{
+                return 0
+        }</span>
+
+        <span class="cov8" title="1">return a / b</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

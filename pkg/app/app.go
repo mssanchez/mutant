@@ -12,15 +12,15 @@ import (
 	"net/http"
 )
 
-// Used to initialize the application
+// Application is used to initialize the application
 type Application struct {
 	log           *logrus.Logger
-	httpRoutes    *routes.HttpRoutes
+	httpRoutes    *routes.HTTPRoutes
 	configuration config.Configuration
 	mutantStorage storage.MutantStorage
 }
 
-// Instantiates a new application
+// NewApplication instantiates a new application
 func NewApplication(configuration config.Configuration) *Application {
 	logger := log.NewLogger(true)
 
@@ -30,7 +30,7 @@ func NewApplication(configuration config.Configuration) *Application {
 
 	mutantStats := stats.NewStats(mutantStorage)
 
-	httpRoutes := routes.NewHttpRoutes(logger, mutantSvc, mutantStats)
+	httpRoutes := routes.NewHTTPRoutes(logger, mutantSvc, mutantStats)
 
 	return &Application{
 		log:           logger,
@@ -40,7 +40,7 @@ func NewApplication(configuration config.Configuration) *Application {
 	}
 }
 
-// Starts the server in the configured port
+// RunServer starts the server in the configured port
 func (app *Application) RunServer() {
 
 	s := &http.Server{
@@ -50,9 +50,10 @@ func (app *Application) RunServer() {
 
 	go server.StartServer(s, app.log)
 
-	server.ListenShutdownSignal(s, app.log, app.ShutDown)
+	server.ListenShutdownSignal(s, app.log, app.Shutdown)
 }
 
-func (app *Application) ShutDown() {
+// Shutdown ensures all the dependencies of the application shutdown correctly
+func (app *Application) Shutdown() {
 	app.mutantStorage.Shutdown()
 }

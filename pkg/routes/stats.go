@@ -23,13 +23,14 @@ func addStatsHandler(e *gin.Engine, log *logrus.Logger, m stats.Stats) {
 }
 
 func (s *statsHandler) stats(ctx *gin.Context) (interface{}, error) {
-	if result, err := s.statsService.MutantStats(); err != nil {
+	result, err := s.statsService.MutantStats()
+	if err != nil {
 		return nil, err
-	} else {
-		return api.MutantStats{
-			CountMutantDna: result.CountMutant,
-			CountHumanDna:  result.CountHuman,
-			Ratio:          result.Ratio,
-		}, nil
 	}
+
+	return api.MutantStats{
+		CountMutantDna: result.CountMutant,
+		CountHumanDna:  result.CountHuman,
+		Ratio:          result.Ratio,
+	}, nil
 }

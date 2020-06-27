@@ -13,17 +13,18 @@ import (
 	"mutant/pkg/routes"
 )
 
-// Initialize a Gin router and register routes
-func NewGinHandler(routes *routes.HttpRoutes) *gin.Engine {
+// NewGinHandler initializes a Gin router and register routes
+func NewGinHandler(routes *routes.HTTPRoutes) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 
 	e := gin.New()
 
-	routes.AddAllHttpRoutes(e)
+	routes.AddAllHTTPRoutes(e)
 
 	return e
 }
 
+// StartServer handles the startup of the server
 func StartServer(s *http.Server, log *logrus.Logger) {
 	log.Infof("Starting Server on %s\n", s.Addr)
 	if err := s.ListenAndServe(); err != nil {
@@ -32,7 +33,7 @@ func StartServer(s *http.Server, log *logrus.Logger) {
 	}
 }
 
-//This function will block until a SIGINT occur
+// ListenShutdownSignal will block until a SIGINT occur
 func ListenShutdownSignal(s *http.Server, log *logrus.Logger, shutdown func()) {
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)

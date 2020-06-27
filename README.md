@@ -1,5 +1,7 @@
 # Mutant
-Proyecto que detecta si un humano es mutante basándose en su secuencia de ADN
+Proyecto que detecta si un humano es mutante basándose en su secuencia de ADN.
+
+Escrito en [Go].
 
 # Problema
 
@@ -32,7 +34,56 @@ Aparecerá el siguiente mensaje:
 2020-06-15T23:10:02.637 info [PMITN010500]: init storage package...
 2020-06-15T23:10:02.637 info [PMITN010500]: storage client with local environment
 2020-06-15T23:10:02.637 info [PMITN010500]: init routes package...
-2020-06-15T23:10:02.637 info [PMITN010500]: Starting Server on :9290
+2020-06-15T23:10:02.637 info [PMITN010500]: Starting Server on :8080
 ```
 
-En ese caso la aplicación se encuentra lista y escuchando en el puerto 9290.
+En ese caso la aplicación se encuentra lista y escuchando en el puerto 8080.
+
+[Go]:https://golang.org/
+
+# Coverage
+
+Para evaluar el coverage del proyecto, posicionado en el root del proyecto ejecutar:
+```
+go test -coverprofile=coverage.out ./...
+go tool cover -func=coverage.out
+```
+Lo cual generará el siguiente reporte:
+```
+mutant/pkg/app/app.go:24:		NewApplication		100.0%
+mutant/pkg/app/app.go:44:		RunServer		0.0%
+mutant/pkg/app/app.go:57:		Shutdown		0.0%
+mutant/pkg/config/config.go:34:		NewConfiguration	100.0%
+mutant/pkg/config/config.go:47:		readApplicationConfig	86.7%
+mutant/pkg/errors/error.go:34:		New			100.0%
+mutant/pkg/errors/error.go:39:		Newf			0.0%
+mutant/pkg/errors/error.go:44:		Wrapf			100.0%
+mutant/pkg/errors/error.go:49:		New			100.0%
+mutant/pkg/errors/error.go:54:		Newf			100.0%
+mutant/pkg/errors/error.go:59:		Wrapf			100.0%
+mutant/pkg/errors/error.go:73:		AddSingleContext	100.0%
+mutant/pkg/errors/error.go:84:		Context			100.0%
+mutant/pkg/errors/error.go:89:		Error			100.0%
+mutant/pkg/errors/error.go:94:		Type			100.0%
+mutant/pkg/mutant/mutant.go:13:		NewMutant		100.0%
+mutant/pkg/mutant/mutant.go:28:		IsMutant		100.0%
+mutant/pkg/mutant/mutant.go:68:		isVerticalMutant	100.0%
+mutant/pkg/mutant/mutant.go:86:		isObliqueMutant		100.0%
+mutant/pkg/mutant/mutant.go:105:	isHorizontalMutant	100.0%
+mutant/pkg/mutant/mutant.go:120:	validateSequence	100.0%
+mutant/pkg/mutant/validator.go:12:	Validate		100.0%
+mutant/pkg/mutant/validator.go:22:	Validate		100.0%
+mutant/pkg/routes/healthCheck.go:9:	addHealthCheckRoutes	100.0%
+mutant/pkg/routes/healthCheck.go:14:	healthCheck		100.0%
+mutant/pkg/routes/mutant.go:17:		addMutantHandler	100.0%
+mutant/pkg/routes/mutant.go:26:		Mutant			100.0%
+mutant/pkg/routes/routes.go:18:		NewHTTPRoutes		0.0%
+mutant/pkg/routes/routes.go:29:		AddAllHTTPRoutes	0.0%
+mutant/pkg/routes/stats.go:16:		addStatsHandler		100.0%
+mutant/pkg/routes/stats.go:25:		stats			100.0%
+mutant/pkg/stats/stats.go:11:		NewStats		100.0%
+mutant/pkg/stats/stats.go:26:		MutantStats		100.0%
+mutant/pkg/stats/stats.go:44:		safeDivideFloat		100.0%
+total:					(statements)		91.2%
+```
+El reporte y un HTML con los resultados se pueden encontrar en el directorio [coverage](coverage).
