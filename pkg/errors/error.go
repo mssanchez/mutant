@@ -12,11 +12,15 @@ type ErrorType uint
 const (
 	// NoType is an error without a specific type
 	NoType ErrorType = iota
+	// UserError indicates the user data is incorrect
 	UserError
+	// StatusUnsupportedMediaType indicates that the server refuses to accept the request because the payload format is in an unsupported format
 	StatusUnsupportedMediaType
+	// Forbidden indicates that the server understood the request but refuses to authorize it
 	Forbidden
 )
 
+// Error represents a custom error used throughout the project
 type Error interface {
 	Type() ErrorType
 	Error() string

@@ -14,11 +14,13 @@ type Configuration struct {
 	Environment string
 }
 
+// App contains configuration related to the application
 type App struct {
 	Server  Server  `json:"server"`
 	Mongodb Mongodb `json:"mongodb"`
 }
 
+// Server contains the port on which the application will listen to requests
 type Server struct {
 	Port string `json:"port"`
 }

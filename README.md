@@ -41,7 +41,16 @@ En ese caso la aplicación se encuentra lista y escuchando en el puerto 8080.
 
 [Go]:https://golang.org/
 
-# Coverage
+# Tests
+
+## Como ejecutar tests
+
+Sobre el root del proyecto ejecutar:
+```
+go test ./...
+```
+
+## Coverage
 
 Para evaluar el coverage del proyecto, posicionado en el root del proyecto ejecutar:
 ```
@@ -128,3 +137,12 @@ Ejecutar el script de [deploy](deploy.sh) parado sobre el root del proyecto.
 El script pedirá confirmación antes de deployar.
 
 Una vez finalizado, se muestran los logs de la aplicación.
+
+## Análisis de codigo
+
+Se utilizó la herramienta [golint](https://github.com/golang/lint).
+
+Para ejecutar el análisis, sobre el root del proyecto ejecutar:
+```
+golint ./...
+```
