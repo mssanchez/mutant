@@ -1,8 +1,6 @@
 # Mutant
 Proyecto que detecta si un humano es mutante basándose en su secuencia de ADN.
 
-Escrito en [Go].
-
 # Problema
 
 Es necesario conocer si un humano es mutante o no.
@@ -146,3 +144,22 @@ Para ejecutar el análisis, sobre el root del proyecto ejecutar:
 ```
 golint ./...
 ```
+
+# Decisiones de diseño y tecnología seleccionada
+
+### Tecnología usada
+
+Escrito en [Go](https://golang.org/). 
+
+Uno de los motivos por los cuales se tomó esta decisión es que Go es rápido. 
+Ha demostrado ser generalmente más rápido que lenguajes como Java y Python, lo que mejora la disponibilidad de los servicios. [Estos](https://benchmarksgame-team.pages.debian.net/benchmarksgame/fastest/go.html) son algunos benchmarks al respecto.
+
+A su vez Golang ya es usado en muchos proyectos, y hay una comunidad muy amplia usandolo, lo que facilita el soporte. Además hay muchas herramientas disponibles para trabajar en este lenguaje.
+
+### Base de datos
+
+Se decidió utilizar [MongoDB](https://www.mongodb.com/es) como base de datos.
+Algunas de las razones por lo cual se tomó esta decisión son:
+ - Poder almacenar datos sin estructuras, lo cual facilita si el día de mañana se decide guardar otra tipo de estructura.
+ - Es fácil de escalar y permite distribuir la información en diferentes nodos.  
+ - Permite manejar grandes cantidades de documentos con buenos resultados en cuanto a velocidad.
