@@ -98,6 +98,8 @@ El reporte y un HTML con los resultados se pueden encontrar en el directorio [co
 
 # Ejemplos
 
+El servicio se encuentra levantado en una instancia de Google App Engine, a la cual se puede acceder mediante el endpoint https://positive-apex-280419.ue.r.appspot.com/mutant
+
 ### Verificar si una cadena de ADN es mutante
 ```
 curl -v -X POST 'https://positive-apex-280419.ue.r.appspot.com/mutant' \
